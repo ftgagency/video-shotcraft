@@ -30,6 +30,8 @@ concurrency:
 
 jobs:
   deploy:
+    # Keep publishing the gallery in the source repository; fork demo deploys use deploy-workbench-demo.yml.
+    if: github.repository == 'Vincentwei1021/video-shotcraft'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

@@ -13,6 +13,7 @@ import { PROJ_DIR, PROJ_HAS_MANIFEST, PROJ_LINKED } from "../projMeta";
 import { setDragPayload } from "../dnd";
 import { ThemePanel } from './ThemePanel';
 import { cardName, cardSummary, useT, useTx } from "../i18n";
+import { publicAssetUrl } from "../publicAssetUrl";
 
 const TABS = [
   { id: "media", key: "lib.tab.media" },
@@ -196,7 +197,7 @@ export const LibraryPanel: React.FC = () => {
       onClick={() => setPreview({ kind: "card", cardId: card.id })}
       payload={{ cardId: card.id }}
     >
-      {card.preview ? <LazyLoopVideo src={`/${card.preview}`} /> : <LazyCardLoop card={card} />}
+      {card.preview ? <LazyLoopVideo src={publicAssetUrl(card.preview)} /> : <LazyCardLoop card={card} />}
     </Cell>
   );
 
@@ -323,9 +324,9 @@ export const LibraryPanel: React.FC = () => {
                       }
                     >
                       {m.kind === "video" ? (
-                        <LazyLoopVideo src={`/${m.file}`} />
+                        <LazyLoopVideo src={publicAssetUrl(m.file)} />
                       ) : (
-                        <img className="lib-thumb" src={`/${m.file}`} />
+                        <img className="lib-thumb" src={publicAssetUrl(m.file)} />
                       )}
                     </Cell>
                   ))}

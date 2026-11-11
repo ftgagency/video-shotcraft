@@ -42,7 +42,7 @@ const startSplit = (
 };
 
 /** 导出成片：提交当前工程给 dev server 的 Remotion 渲染任务，轮询进度 */
-const ExportButton: React.FC = () => {
+const ServerExportButton: React.FC = () => {
   const t = useT();
   const [job, setJob] = useState<{
     id: string;
@@ -124,6 +124,18 @@ const ExportButton: React.FC = () => {
   );
 };
 
+const StaticExportButton: React.FC = () => (
+  <button
+    className="btn primary"
+    disabled
+    title="Bản demo tĩnh không có máy chủ render; không thể xuất MP4. Hãy dùng Xuất JSON để lưu dự án."
+  >
+    MP4 · chưa hỗ trợ
+  </button>
+);
+
+const ExportButton: React.FC = __STATIC_DEMO__ ? StaticExportButton : ServerExportButton;
+
 export const App: React.FC = () => {
   const t = useT();
   const locale = useLocale((s) => s.locale);
@@ -194,6 +206,15 @@ export const App: React.FC = () => {
 
   return (
     <div className="app">
+      {__STATIC_DEMO__ && (
+        <section className="prototype-banner" aria-label="Phạm vi bản demo">
+          <strong>BẢN DEMO TĨNH · CHỈNH SỬA VÀ XEM TRƯỚC TRONG TRÌNH DUYỆT</strong>
+          <span>
+            Dùng project mẫu, timeline, kéo thả và thuộc tính để thử chỉnh sửa. Dự án tự lưu trên trình duyệt; có thể nhập/xuất JSON.
+            Bản này không tải video cá nhân lên; không gọi dịch vụ trả phí và không xuất MP4 — render cần máy chủ backend.
+          </span>
+        </section>
+      )}
       <header className="topbar">
         <span className="logo">ShotCraft <b>Workbench</b></span>
         <input

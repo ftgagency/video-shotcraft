@@ -1,0 +1,45 @@
+name: Deploy static workbench demo
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'workbench/**'
+      - '.github/workflows/deploy-workbench-demo.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: deploy-pages
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    # The original repository's production gallery is intentionally not replaced by this fork-only demo workflow.
+    if: github.repository != 'Vincentwei1021/video-shotcraft'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: workbench/package-lock.json
+      - name: Install workbench dependencies
+        run: npm ci
+        working-directory: workbench
+      - name: Build static demo
+        run: npm run build:demo
+        working-directory: workbench
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: workbench/dist
+      - id: deployment
+        uses: actions/deploy-pages@v4

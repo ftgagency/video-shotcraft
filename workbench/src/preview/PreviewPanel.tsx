@@ -10,6 +10,7 @@ import { cardFps, cardSize } from "../cards/types";
 import { MANIFEST } from '../cards/projectCards';
 import { themedProps } from '../theme';
 import { cardName, t, useLocale, useT } from "../i18n";
+import { publicAssetUrl } from "../publicAssetUrl";
 
 /** 素材库点击预览：占据画面区，循环播放；主工程 Player 保持挂载（display:none） */
 const ItemPreview: React.FC<{ item: NonNullable<PreviewItem>; onClose: () => void }> = ({
@@ -49,14 +50,14 @@ const ItemPreview: React.FC<{ item: NonNullable<PreviewItem>; onClose: () => voi
   } else {
     title = item.label;
     if (item.kind === "video")
-      body = <video className="preview-media" src={`/${item.file}`} controls autoPlay loop />;
+      body = <video className="preview-media" src={publicAssetUrl(item.file)} controls autoPlay loop />;
     else if (item.kind === "image")
-      body = <img className="preview-media" src={`/${item.file}`} />;
+      body = <img className="preview-media" src={publicAssetUrl(item.file)} />;
     else
       body = (
         <div className="preview-audio">
           🔊 {item.label}
-          <audio src={`/${item.file}`} controls autoPlay />
+          <audio src={publicAssetUrl(item.file)} controls autoPlay />
         </div>
       );
   }

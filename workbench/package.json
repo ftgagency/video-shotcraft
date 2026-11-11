@@ -13,6 +13,7 @@
     "dev": "vite",
     "prebuild": "node scripts/gen-index.mjs",
     "build": "tsc -b && vite build",
+    "build:demo": "STATIC_DEMO=1 npm run build",
     "preview": "vite preview",
     "prestudio": "node scripts/gen-index.mjs",
     "studio": "remotion studio src/remotion/index.ts",

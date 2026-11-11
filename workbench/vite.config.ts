@@ -12,6 +12,7 @@ import type { ExportError } from "./src/export-errors";
 // preserveSymlinks 让两者按虚拟路径解析，其 'react'/'remotion' 裸导入
 // 落到本工程 node_modules（避免双实例）；src/proj.d.ts 让 tsc 不检查外部源码。
 const root = fileURLToPath(new URL(".", import.meta.url));
+const staticDemo = process.env.STATIC_DEMO === "1";
 // 工程链接了但没写 src/workbench.ts 清单时也回退到 stub（工作台只 import @proj/workbench 这一个模块）
 const proj = existsSync(path.join(root, "proj", "workbench.ts")) ? "proj" : "proj-stub";
 
@@ -186,7 +187,10 @@ const renderExportPlugin = (): Plugin => {
 };
 
 export default defineConfig({
-  plugins: [react(), renderExportPlugin()],
+  // GitHub Pages 是纯静态托管：不要注册 dev server 的 Remotion 导出 API。
+  plugins: [react(), ...(!staticDemo ? [renderExportPlugin()] : [])],
+  base: staticDemo ? "/video-shotcraft/" : "/",
+  define: { __STATIC_DEMO__: JSON.stringify(staticDemo) },
   // 5198：与 video-talkcraft 的工作台（5199）错开，两边可同时开
   server: { port: 5198, strictPort: true },
   resolve: {
