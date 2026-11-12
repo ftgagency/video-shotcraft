@@ -398,11 +398,14 @@ export const LibraryPanel: React.FC = () => {
                             onClick={(event) => {
                               event.stopPropagation();
                               const state = useStore.getState();
-                              state.addClip("video-clip", undefined, state.playhead, {
+                              state.addTrack();
+                              const videoTrack = useStore.getState().project.tracks[0];
+                              state.addClip("video-clip", videoTrack.id, state.playhead, {
                                 props: { file },
                                 label: asset.name,
                                 duration: Math.max(1, Math.round(asset.duration * state.project.fps)),
                               });
+                              state.setPreview(null);
                             }}
                           >＋</button>
                         </div>
