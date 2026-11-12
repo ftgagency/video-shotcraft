@@ -14,6 +14,15 @@ import { setDragPayload } from "../dnd";
 import { ThemePanel } from './ThemePanel';
 import { cardName, cardSummary, useT, useTx } from "../i18n";
 import { publicAssetUrl } from "../publicAssetUrl";
+import {
+  listLocalVideos,
+  localVideoRef,
+  readVideoMetadata,
+  removeLocalVideo,
+  saveLocalVideo,
+  useLocalVideoUrl,
+  type LocalVideoAsset,
+} from "../localMedia";
 
 const TABS = [
   { id: "media", key: "lib.tab.media" },
@@ -78,6 +87,13 @@ const LazyLoopVideo: React.FC<{ src: string }> = ({ src }) => {
       preload="none"
     />
   );
+};
+
+const LocalVideoThumb: React.FC<{ file: string }> = ({ file }) => {
+  const src = useLocalVideoUrl(file);
+  return src
+    ? <LazyLoopVideo src={src} />
+    : <div className="lib-thumb lib-thumb-empty">▶</div>;
 };
 
 /** 没有预渲染视频的卡：可见时用实时 Player 当缩略图——**静止在 45% 处的定妆帧**，鼠标悬停才循环播放。
@@ -155,6 +171,50 @@ export const LibraryPanel: React.FC = () => {
   const t = useT();
   const tx = useTx();
   const setPreview = useStore((s) => s.setPreview);
+  const projectFps = useStore((s) => s.project.fps);
+  const [localVideos, setLocalVideos] = useState<LocalVideoAsset[]>([]);
+  const [importMessage, setImportMessage] = useState("");
+  const [importing, setImporting] = useState(false);
+  const videoInput = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    listLocalVideos().then(setLocalVideos).catch(() => setImportMessage(t("lib.localStorageUnavailable")));
+  }, [t]);
+
+  const importVideos = async (files: FileList | null) => {
+    if (!files?.length) return;
+    setImporting(true);
+    setImportMessage("");
+    let added = 0;
+    let failed = 0;
+    for (const file of Array.from(files)) {
+      if (!file.type.startsWith("video/") && !/\.(mp4|mov|webm|m4v|ogv|avi)$/i.test(file.name)) {
+        failed++;
+        continue;
+      }
+      try {
+        const metadata = await readVideoMetadata(file);
+        await saveLocalVideo(file, metadata);
+        added++;
+      } catch {
+        failed++;
+      }
+    }
+    try { setLocalVideos(await listLocalVideos()); }
+    catch { setImportMessage(t("lib.localStorageUnavailable")); }
+    if (added || failed) setImportMessage(t("lib.importVideoResult", { added, failed }));
+    setImporting(false);
+  };
+
+  const forgetVideo = async (asset: LocalVideoAsset) => {
+    if (!window.confirm(t("lib.removeVideoConfirm", { name: asset.name }))) return;
+    try {
+      await removeLocalVideo(asset.id);
+      setLocalVideos((items) => items.filter((item) => item.id !== asset.id));
+      setPreview(null);
+    } catch {
+      setImportMessage(t("lib.removeVideoFailed"));
+    }
+  };
   const [tab, setTab] = useState<TabId>(PROJ_LINKED ? "media" : "cards");
   // 折叠分组默认收起，点击标题展开
   const [openCats, setOpenCats] = useState<Set<string>>(new Set());
@@ -274,6 +334,84 @@ export const LibraryPanel: React.FC = () => {
         {tab === 'themes' && <ThemePanel />}
         {tab === "media" && (
           <>
+            <div className="local-media-tools">
+              <button className="btn primary wide" onClick={() => videoInput.current?.click()} disabled={importing}>
+                {importing ? t("lib.importingVideos") : t("lib.importVideo")}
+              </button>
+              <input
+                ref={videoInput}
+                type="file"
+                accept="video/*,.mp4,.mov,.webm,.m4v,.ogv,.avi"
+                multiple
+                hidden
+                onChange={(event) => {
+                  const files = event.target.files;
+                  void importVideos(files);
+                  event.target.value = "";
+                }}
+              />
+              <div className="local-media-note">{t("lib.localOnly")}</div>
+              {importMessage && <div className="local-media-status" role="status">{importMessage}</div>}
+            </div>
+            {localVideos.length > 0 && (
+              <>
+                <div className="lib-cat">{t("lib.localVideos")}</div>
+                <div className="lib-grid">
+                  {localVideos.map((asset) => {
+                    const file = localVideoRef(asset.id);
+                    const payload = {
+                      cardId: "video-clip",
+                      props: { file },
+                      label: asset.name,
+                      duration: Math.max(1, Math.round(asset.duration * projectFps)),
+                    };
+                    return (
+                      <div
+                        key={asset.id}
+                        className="lib-cell"
+                        draggable
+                        onDragStart={(event) => setDragPayload(event, payload)}
+                        onClick={() => setPreview({ kind: "video", file, label: asset.name })}
+                        title={`${asset.name}\n${t("lib.cellHint")}`}
+                      >
+                        <LocalVideoThumb file={file} />
+                        <div className="local-video-name">
+                          <span className="lib-cell-name" title={asset.name}>{asset.name}</span>
+                          <button
+                            className="mini local-video-remove"
+                            aria-label={t("lib.removeVideo", { name: asset.name })}
+                            title={t("lib.removeVideo", { name: asset.name })}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              void forgetVideo(asset);
+                            }}
+                          >×</button>
+                        </div>
+                        <div className="local-video-meta">
+                          <div className="lib-cell-meta dim">
+                            {asset.duration.toFixed(1)}s · {asset.width}×{asset.height}
+                          </div>
+                          <button
+                            className="mini local-video-add"
+                            aria-label={t("lib.addVideoToTimeline", { name: asset.name })}
+                            title={t("lib.addVideoToTimeline", { name: asset.name })}
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              const state = useStore.getState();
+                              state.addClip("video-clip", undefined, state.playhead, {
+                                props: { file },
+                                label: asset.name,
+                                duration: Math.max(1, Math.round(asset.duration * state.project.fps)),
+                              });
+                            }}
+                          >＋</button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
             {MANIFEST ? (
               <button
                 className="btn wide"

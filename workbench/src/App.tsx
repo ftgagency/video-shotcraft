@@ -210,8 +210,8 @@ export const App: React.FC = () => {
         <section className="prototype-banner" aria-label="Phạm vi bản demo">
           <strong>BẢN DEMO TĨNH · CHỈNH SỬA VÀ XEM TRƯỚC TRONG TRÌNH DUYỆT</strong>
           <span>
-            Dùng project mẫu, timeline, kéo thả và thuộc tính để thử chỉnh sửa. Dự án tự lưu trên trình duyệt; có thể nhập/xuất JSON.
-            Bản này không tải video cá nhân lên; không gọi dịch vụ trả phí và không xuất MP4 — render cần máy chủ backend.
+            Có thể nạp video ở tab Media để xem trước và kéo vào timeline. Tệp chỉ lưu trong trình duyệt của bạn, không tải lên máy chủ.
+            Dự án tự lưu và có thể nhập/xuất JSON; bản demo không xuất MP4 vì không dùng máy chủ render.
           </span>
         </section>
       )}

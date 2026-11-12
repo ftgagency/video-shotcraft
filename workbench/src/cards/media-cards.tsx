@@ -1,6 +1,7 @@
 import React from "react";
-import { AbsoluteFill, Audio, Img, OffthreadVideo, staticFile } from "remotion";
+import { AbsoluteFill, Audio, Img, OffthreadVideo, staticFile, Video } from "remotion";
 import type { CardDef } from "./types";
+import { isLocalVideoRef, useLocalVideoUrl } from "../localMedia";
 
 // —— 媒体卡：视频 / 图片 / 音频文件直接上轨（成片工程 public/ 与仓库音效库都走它们）——
 // 视频/音频卡 kind:"video"/"audio"：裁入=trimBefore、变速=playbackRate（不能包 Freeze，会掐死原生播放）
@@ -13,7 +14,23 @@ const VideoClip: React.FC<{
   inOffset?: number;
   speed?: number;
 }> = ({ file = "", fit = "contain", muted = false, volume = 1, inOffset = 0, speed = 1 }) => {
+  const localUrl = useLocalVideoUrl(file);
   if (!file) return null;
+  if (isLocalVideoRef(file)) {
+    if (!localUrl) return null;
+    return (
+      <AbsoluteFill style={{ background: "#000" }}>
+        <Video
+          src={localUrl}
+          trimBefore={Math.round(inOffset)}
+          playbackRate={speed}
+          muted={muted}
+          volume={volume}
+          style={{ width: "100%", height: "100%", objectFit: fit as React.CSSProperties["objectFit"] }}
+        />
+      </AbsoluteFill>
+    );
+  }
   return (
     <AbsoluteFill style={{ background: "#000" }}>
       <OffthreadVideo

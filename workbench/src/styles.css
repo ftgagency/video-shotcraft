@@ -171,6 +171,15 @@ body {
 
 /* 素材网格（循环视频/实时卡片预览） */
 .lib-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 8px; margin-bottom: 10px; }
+.local-media-tools { margin: 2px 0 8px; }
+.local-media-tools .btn { white-space: normal; line-height: 1.35; }
+.local-media-note, .local-media-status { padding: 0 3px; color: var(--text-dim); font-size: 10px; line-height: 1.5; }
+.local-media-status { color: #ffd27a; margin-top: 4px; }
+.local-video-name { display: flex; align-items: center; gap: 2px; min-width: 0; }
+.local-video-name .lib-cell-name { flex: 1; min-width: 0; }
+.local-video-remove { flex: none; margin-top: 4px; padding: 2px 6px; }
+.local-video-meta { display: flex; align-items: center; justify-content: space-between; gap: 2px; }
+.local-video-add { flex: none; padding: 1px 5px; color: #7fc0ff; }
 .lib-cell { cursor: grab; min-width: 0; }
 .lib-thumb {
   display: block; width: 100%; aspect-ratio: 16/9; object-fit: cover;

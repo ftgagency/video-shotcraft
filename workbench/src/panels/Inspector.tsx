@@ -6,6 +6,7 @@ import { findClip, useStore } from "../store";
 import { MANIFEST } from '../cards/projectCards';
 import { themedProps } from '../theme';
 import { cardName, tx, useT, useTx } from "../i18n";
+import { isLocalVideoRef } from "../localMedia";
 
 /** 单个属性控件：按 schema 字段类型渲染 */
 const PropControl: React.FC<{
@@ -155,6 +156,7 @@ export const Inspector: React.FC = () => {
 
   const { track, clip } = hit;
   const card = CARDS[clip.cardId];
+  const hideLocalFileReference = card?.kind === "video" && isLocalVideoRef(String(clip.props.file ?? ""));
   const fps = project.fps;
   // 卡片编排帧率 ≠ 工程帧率（只有逐帧编排的卡需要提示；媒体卡按墙钟走无此问题）
   const srcFps = card ? cardFps(card) : fps;
@@ -181,7 +183,7 @@ export const Inspector: React.FC = () => {
         {card && card.schema.length > 0 && (
           <section>
             <div className="sec-title">{t("insp.contentStyle")}</div>
-            {card.schema.map((field) => (
+            {card.schema.filter((field) => !(hideLocalFileReference && field.key === "file")).map((field) => (
               <Row key={field.key} label={tx(field.label)}>
                 <PropControl
                   field={field}

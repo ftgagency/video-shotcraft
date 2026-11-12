@@ -19,8 +19,8 @@ Fork dùng workflow **Deploy static workbench demo**: chạy tự động khi c�
 ## Phạm vi và lưu trữ
 
 - Có thể thử preview trực tiếp, timeline nhiều track, kéo thả/thay đổi clip và thuộc tính, undo/redo, nhập/xuất project JSON.
-- Các thay đổi tự lưu vào `localStorage` của trình duyệt trên thiết bị hiện tại. Tải JSON để sao lưu hoặc chuyển dự án sang trình duyệt khác.
-- Đây là prototype giao diện/chỉnh sửa phía trình duyệt: không tải video lên dịch vụ, không gọi API render hay API trả phí và **không xuất MP4**. Render MP4 cần backend mà bản demo miễn phí này không triển khai.
-- Project JSON chỉ lưu dữ liệu dự án; tệp video cá nhân không được nhúng vào JSON hoặc lưu lên máy chủ.
+- Trong tab **Media**, chọn video trên thiết bị để xem trước và kéo vào timeline. Video lưu trong IndexedDB của trình duyệt hiện tại; không tải lên máy chủ. Nếu xóa dữ liệu website của trình duyệt, video local cũng sẽ bị xóa.
+- Các thay đổi dự án tự lưu vào `localStorage`. Project JSON chỉ lưu thông tin dự án và tham chiếu video local, không chứa video; khi đổi trình duyệt hoặc thiết bị, cần nhập lại video.
+- Đây là prototype giao diện/chỉnh sửa phía trình duyệt: không gọi API render hay API trả phí và **không xuất MP4**. Render MP4 cần backend mà bản demo miễn phí này không triển khai.
 
 Dự án giữ giấy phép và ghi nhận tác giả hiện có trong kho.

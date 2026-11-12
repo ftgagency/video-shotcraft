@@ -11,6 +11,7 @@ import { MANIFEST } from '../cards/projectCards';
 import { themedProps } from '../theme';
 import { cardName, t, useLocale, useT } from "../i18n";
 import { publicAssetUrl } from "../publicAssetUrl";
+import { isLocalVideoRef, useLocalVideoUrl } from "../localMedia";
 
 /** 素材库点击预览：占据画面区，循环播放；主工程 Player 保持挂载（display:none） */
 const ItemPreview: React.FC<{ item: NonNullable<PreviewItem>; onClose: () => void }> = ({
@@ -20,6 +21,7 @@ const ItemPreview: React.FC<{ item: NonNullable<PreviewItem>; onClose: () => voi
   const themeId = useStore(s => s.project.themeId);
   const themeColors = useStore(s => s.project.themeColors);
   const t = useT();
+  const localVideoUrl = useLocalVideoUrl(item.kind === "video" ? item.file : "");
   let body: React.ReactNode = null;
   let title = "";
   if (item.kind === "card") {
@@ -49,8 +51,12 @@ const ItemPreview: React.FC<{ item: NonNullable<PreviewItem>; onClose: () => voi
     }
   } else {
     title = item.label;
-    if (item.kind === "video")
-      body = <video className="preview-media" src={publicAssetUrl(item.file)} controls autoPlay loop />;
+    if (item.kind === "video") {
+      const src = isLocalVideoRef(item.file) ? localVideoUrl : publicAssetUrl(item.file);
+      body = src
+        ? <video className="preview-media" src={src} controls autoPlay loop />
+        : <div className="preview-audio">{t("lib.videoLoading")}</div>;
+    }
     else if (item.kind === "image")
       body = <img className="preview-media" src={publicAssetUrl(item.file)} />;
     else
