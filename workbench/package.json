@@ -18,15 +18,18 @@
     "prestudio": "node scripts/gen-index.mjs",
     "studio": "remotion studio src/remotion/index.ts",
     "open": "node scripts/open.mjs",
-    "parity": "node scripts/parity.mjs"
+    "parity": "node scripts/parity.mjs",
+    "test:browser-join": "node --test scripts/test-browser-join.mjs"
   },
   "dependencies": {
+    "@mediabunny/aac-encoder": "1.65.2",
     "@react-three/fiber": "9.6.1",
     "@remotion/google-fonts": "4.0.484",
     "@remotion/motion-blur": "4.0.484",
     "@remotion/player": "4.0.484",
     "@remotion/three": "4.0.484",
     "@remotion/zod-types": "4.0.484",
+    "mediabunny": "1.65.2",
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "remotion": "4.0.484",

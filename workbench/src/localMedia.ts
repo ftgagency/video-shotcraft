@@ -100,7 +100,7 @@ export const listLocalVideos = async (): Promise<LocalVideoAsset[]> => {
   }
 };
 
-const getLocalVideoBlob = async (id: string): Promise<Blob | null> => {
+export const getLocalVideoBlob = async (id: string): Promise<Blob | null> => {
   const db = await openDb();
   try {
     return await new Promise((resolve, reject) => {

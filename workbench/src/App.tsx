@@ -8,6 +8,7 @@ import { seekTo, togglePlay } from "./playerRef";
 import type { ProjectData } from "./types";
 import { applyLocaleToDocument, LOCALES, useLocale, useT, type Locale } from "./i18n";
 import type { ExportError } from "./export-errors";
+import { BrowserVideoJoinButton } from "./BrowserVideoJoinButton";
 
 const isEditable = (el: EventTarget | null) =>
   el instanceof HTMLElement &&
@@ -124,15 +125,7 @@ const ServerExportButton: React.FC = () => {
   );
 };
 
-const StaticExportButton: React.FC = () => (
-  <button
-    className="btn primary"
-    disabled
-    title="Bản demo tĩnh không có máy chủ render; không thể xuất MP4. Hãy dùng Xuất JSON để lưu dự án."
-  >
-    MP4 · chưa hỗ trợ
-  </button>
-);
+const StaticExportButton: React.FC = () => <BrowserVideoJoinButton />;
 
 const ExportButton: React.FC = __STATIC_DEMO__ ? StaticExportButton : ServerExportButton;
 
@@ -210,8 +203,8 @@ export const App: React.FC = () => {
         <section className="prototype-banner" aria-label="Phạm vi bản demo">
           <strong>BẢN DEMO TĨNH · CHỈNH SỬA VÀ XEM TRƯỚC TRONG TRÌNH DUYỆT</strong>
           <span>
-            Có thể nạp video ở tab Media để xem trước và kéo vào timeline. Tệp chỉ lưu trong trình duyệt của bạn, không tải lên máy chủ.
-            Dự án tự lưu và có thể nhập/xuất JSON; bản demo không xuất MP4 vì không dùng máy chủ render.
+            Nạp video ở tab Media, kéo vào timeline và ghép thành MP4 ngay trên thiết bị. Tệp không tải lên máy chủ; phần xuất nhanh chỉ ghép clip video, không gồm tiêu đề, hiệu ứng hay các lớp âm thanh riêng.
+            Dự án tự lưu và có thể nhập/xuất JSON.
           </span>
         </section>
       )}
