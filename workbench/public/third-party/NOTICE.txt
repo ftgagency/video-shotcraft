@@ -1,0 +1,5 @@
+Video Shotcraft browser MP4 export uses unmodified Mediabunny 1.65.2 and @mediabunny/aac-encoder 1.65.2 (MPL-2.0).
+Source: https://github.com/Vanilagy/mediabunny/tree/v1.65.2
+The AAC extension includes an unmodified FFmpeg AAC encoder build under LGPL-2.1-or-later, without GPL, v3 or nonfree components.
+Exact source revision, build/replacement instructions and WASM provenance are in aac-encoder-SOURCE-AND-BUILD.md; license texts are distributed alongside this notice.
+FFmpeg source: https://github.com/FFmpeg/FFmpeg/tree/60a2818f76dcd1fee3155b1791304af104a0fc1b
