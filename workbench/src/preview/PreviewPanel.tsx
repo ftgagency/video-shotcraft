@@ -11,7 +11,7 @@ import { MANIFEST } from '../cards/projectCards';
 import { themedProps } from '../theme';
 import { cardName, t, useLocale, useT } from "../i18n";
 import { publicAssetUrl } from "../publicAssetUrl";
-import { isLocalVideoRef, useLocalVideoUrl } from "../localMedia";
+import { isLocalMediaRef, isLocalVideoRef, useLocalMediaUrl, useLocalVideoUrl } from "../localMedia";
 
 /** 素材库点击预览：占据画面区，循环播放；主工程 Player 保持挂载（display:none） */
 const ItemPreview: React.FC<{ item: NonNullable<PreviewItem>; onClose: () => void }> = ({
@@ -22,6 +22,7 @@ const ItemPreview: React.FC<{ item: NonNullable<PreviewItem>; onClose: () => voi
   const themeColors = useStore(s => s.project.themeColors);
   const t = useT();
   const localVideoUrl = useLocalVideoUrl(item.kind === "video" ? item.file : "");
+  const localAudioUrl = useLocalMediaUrl(item.kind === "audio" ? item.file : "");
   let body: React.ReactNode = null;
   let title = "";
   if (item.kind === "card") {
@@ -63,7 +64,7 @@ const ItemPreview: React.FC<{ item: NonNullable<PreviewItem>; onClose: () => voi
       body = (
         <div className="preview-audio">
           🔊 {item.label}
-          <audio src={publicAssetUrl(item.file)} controls autoPlay />
+          <audio src={isLocalMediaRef(item.file) ? localAudioUrl ?? undefined : publicAssetUrl(item.file)} controls autoPlay />
         </div>
       );
   }

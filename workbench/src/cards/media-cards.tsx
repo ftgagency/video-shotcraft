@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill, Audio, Img, OffthreadVideo, staticFile, Video } from "remotion";
 import type { CardDef } from "./types";
-import { isLocalVideoRef, useLocalVideoUrl } from "../localMedia";
+import { isLocalMediaRef, isLocalVideoRef, useLocalMediaUrl, useLocalVideoUrl } from "../localMedia";
 
 // —— 媒体卡：视频 / 图片 / 音频文件直接上轨（成片工程 public/ 与仓库音效库都走它们）——
 // 视频/音频卡 kind:"video"/"audio"：裁入=trimBefore、变速=playbackRate（不能包 Freeze，会掐死原生播放）
@@ -103,7 +103,12 @@ export const imageClipCard: CardDef = {
 /** 音频卡（BGM / 音效通用）：裁入=trimBefore、变速=playbackRate，裁剪变速不哑音 */
 const AudioClip: React.FC<{ file?: string; volume?: number; inOffset?: number; speed?: number }> =
   ({ file = "", volume = 1, inOffset = 0, speed = 1 }) => {
+    const localUrl = useLocalMediaUrl(file);
     if (!file) return null;
+    if (isLocalMediaRef(file)) {
+      if (!localUrl) return null;
+      return <Audio src={localUrl} volume={volume} trimBefore={Math.round(inOffset)} playbackRate={speed} />;
+    }
     return (
       <Audio
         src={staticFile(file)}

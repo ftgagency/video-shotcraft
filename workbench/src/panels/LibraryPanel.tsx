@@ -15,12 +15,17 @@ import { ThemePanel } from './ThemePanel';
 import { cardName, cardSummary, useT, useTx } from "../i18n";
 import { publicAssetUrl } from "../publicAssetUrl";
 import {
+  listLocalAudios,
   listLocalVideos,
+  localAudioRef,
   localVideoRef,
+  readAudioMetadata,
   readVideoMetadata,
   removeLocalVideo,
+  saveLocalAudio,
   saveLocalVideo,
   useLocalVideoUrl,
+  type LocalAudioAsset,
   type LocalVideoAsset,
 } from "../localMedia";
 
@@ -173,35 +178,49 @@ export const LibraryPanel: React.FC = () => {
   const setPreview = useStore((s) => s.setPreview);
   const projectFps = useStore((s) => s.project.fps);
   const [localVideos, setLocalVideos] = useState<LocalVideoAsset[]>([]);
+  const [localAudios, setLocalAudios] = useState<LocalAudioAsset[]>([]);
   const [importMessage, setImportMessage] = useState("");
   const [importing, setImporting] = useState(false);
   const videoInput = useRef<HTMLInputElement>(null);
   useEffect(() => {
-    listLocalVideos().then(setLocalVideos).catch(() => setImportMessage(t("lib.localStorageUnavailable")));
+    Promise.all([listLocalVideos(), listLocalAudios()])
+      .then(([videos, audios]) => { setLocalVideos(videos); setLocalAudios(audios); })
+      .catch(() => setImportMessage(t("lib.localStorageUnavailable")));
   }, [t]);
 
-  const importVideos = async (files: FileList | null) => {
+  const importMedia = async (files: FileList | null) => {
     if (!files?.length) return;
     setImporting(true);
     setImportMessage("");
     let added = 0;
     let failed = 0;
     for (const file of Array.from(files)) {
-      if (!file.type.startsWith("video/") && !/\.(mp4|mov|webm|m4v|ogv|avi)$/i.test(file.name)) {
+      const isAudio = file.type.startsWith("audio/") || /\.(mp3|wav|m4a|aac|ogg|opus|flac)$/i.test(file.name);
+      const isVideo = file.type.startsWith("video/") || /\.(mp4|mov|webm|m4v|ogv|avi)$/i.test(file.name);
+      if (!isAudio && !isVideo) {
         failed++;
         continue;
       }
       try {
-        const metadata = await readVideoMetadata(file);
-        await saveLocalVideo(file, metadata);
+        if (isAudio) {
+          const metadata = await readAudioMetadata(file);
+          await saveLocalAudio(file, metadata);
+        } else {
+          const metadata = await readVideoMetadata(file);
+          await saveLocalVideo(file, metadata);
+        }
         added++;
       } catch {
         failed++;
       }
     }
-    try { setLocalVideos(await listLocalVideos()); }
+    try {
+      const [videos, audios] = await Promise.all([listLocalVideos(), listLocalAudios()]);
+      setLocalVideos(videos);
+      setLocalAudios(audios);
+    }
     catch { setImportMessage(t("lib.localStorageUnavailable")); }
-    if (added || failed) setImportMessage(t("lib.importVideoResult", { added, failed }));
+    if (added || failed) setImportMessage(t("lib.importMediaResult", { added, failed }));
     setImporting(false);
   };
 
@@ -213,6 +232,16 @@ export const LibraryPanel: React.FC = () => {
       setPreview(null);
     } catch {
       setImportMessage(t("lib.removeVideoFailed"));
+    }
+  };
+  const forgetAudio = async (asset: LocalAudioAsset) => {
+    if (!window.confirm(t("lib.removeAudioConfirm", { name: asset.name }))) return;
+    try {
+      await removeLocalVideo(asset.id);
+      setLocalAudios((items) => items.filter((item) => item.id !== asset.id));
+      setPreview(null);
+    } catch {
+      setImportMessage(t("lib.removeAudioFailed"));
     }
   };
   const [tab, setTab] = useState<TabId>(PROJ_LINKED ? "media" : "cards");
@@ -336,17 +365,17 @@ export const LibraryPanel: React.FC = () => {
           <>
             <div className="local-media-tools">
               <button className="btn primary wide" onClick={() => videoInput.current?.click()} disabled={importing}>
-                {importing ? t("lib.importingVideos") : t("lib.importVideo")}
+                {importing ? t("lib.importingMedia") : t("lib.importMedia")}
               </button>
               <input
                 ref={videoInput}
                 type="file"
-                accept="video/*,.mp4,.mov,.webm,.m4v,.ogv,.avi"
+                accept="video/*,audio/*,.mp4,.mov,.webm,.m4v,.ogv,.avi,.mp3,.wav,.m4a,.aac,.ogg,.opus,.flac"
                 multiple
                 hidden
                 onChange={(event) => {
                   const files = event.target.files;
-                  void importVideos(files);
+                  void importMedia(files);
                   event.target.value = "";
                 }}
               />
@@ -413,6 +442,43 @@ export const LibraryPanel: React.FC = () => {
                     );
                   })}
                 </div>
+              </>
+            )}
+            {localAudios.length > 0 && (
+              <>
+                <div className="lib-cat">{t("lib.localAudio")}</div>
+                {localAudios.map((asset) => {
+                  const file = localAudioRef(asset.id);
+                  const duration = Math.max(1, Math.round(asset.duration * projectFps));
+                  const payload = audioPayload(file, asset.name.replace(/\.[^.]+$/, ""), 1, duration);
+                  return (
+                    <div
+                      key={asset.id}
+                      className="lib-card"
+                      draggable
+                      onDragStart={(event) => setDragPayload(event, payload)}
+                      onClick={() => setPreview({ kind: "audio", file, label: asset.name })}
+                      title={`${asset.name}\n${t("lib.cellHint")}`}
+                    >
+                      <span className="lib-dot" style={{ background: "#ff9f0a" }} />
+                      <span className="lib-name" title={asset.name}>{asset.name}</span>
+                      <span className="lib-dur">{asset.duration.toFixed(1)}s</span>
+                      <button className="mini" aria-label={t("lib.removeAudio", { name: asset.name })} title={t("lib.removeAudio", { name: asset.name })} onClick={(event) => { event.stopPropagation(); void forgetAudio(asset); }}>×</button>
+                      <button className="mini" aria-label={t("lib.addAudioToTimeline", { name: asset.name })} title={t("lib.addAudioToTimeline", { name: asset.name })} onClick={(event) => {
+                        event.stopPropagation();
+                        const state = useStore.getState();
+                        state.addTrack();
+                        const audioTrack = useStore.getState().project.tracks[0];
+                        state.addClip("audio-clip", audioTrack.id, state.playhead, {
+                          props: { file, volume: 1 },
+                          label: asset.name,
+                          duration: Math.max(1, Math.round(asset.duration * state.project.fps)),
+                        });
+                        state.setPreview(null);
+                      }}>＋</button>
+                    </div>
+                  );
+                })}
               </>
             )}
             {MANIFEST ? (

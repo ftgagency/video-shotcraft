@@ -8,7 +8,7 @@ import { seekTo, togglePlay } from "./playerRef";
 import type { ProjectData } from "./types";
 import { applyLocaleToDocument, LOCALES, useLocale, useT, type Locale } from "./i18n";
 import type { ExportError } from "./export-errors";
-import { BrowserVideoJoinButton } from "./BrowserVideoJoinButton";
+import { BrowserVideoExportButton } from "./BrowserVideoExportButton";
 
 const isEditable = (el: EventTarget | null) =>
   el instanceof HTMLElement &&
@@ -125,7 +125,7 @@ const ServerExportButton: React.FC = () => {
   );
 };
 
-const StaticExportButton: React.FC = () => <BrowserVideoJoinButton />;
+const StaticExportButton: React.FC = () => <BrowserVideoExportButton />;
 
 const ExportButton: React.FC = __STATIC_DEMO__ ? StaticExportButton : ServerExportButton;
 
@@ -201,10 +201,9 @@ export const App: React.FC = () => {
     <div className="app">
       {__STATIC_DEMO__ && (
         <section className="prototype-banner" aria-label="Phạm vi bản demo">
-          <strong>BẢN DEMO TĨNH · CHỈNH SỬA VÀ XEM TRƯỚC TRONG TRÌNH DUYỆT</strong>
+          <strong>CHỈNH SỬA VÀ XUẤT NGAY TRONG TRÌNH DUYỆT</strong>
           <span>
-            Nạp video ở tab Media, kéo vào timeline và ghép thành MP4 ngay trên thiết bị. Tệp không tải lên máy chủ; phần xuất nhanh chỉ ghép clip video, không gồm tiêu đề, hiệu ứng hay các lớp âm thanh riêng.
-            Dự án tự lưu và có thể nhập/xuất JSON.
+            Nhập video/âm thanh trong Media; thêm tiêu đề, phụ đề và flash transition từ Motion. Export MP4 giữ đúng thời điểm các lớp video, chữ và âm thanh được hỗ trợ; tệp ở lại trên thiết bị. Thẻ demo phức tạp chưa hỗ trợ sẽ chặn xuất thay vì bị bỏ qua âm thầm. Dự án tự lưu và hỗ trợ nhập/xuất JSON.
           </span>
         </section>
       )}

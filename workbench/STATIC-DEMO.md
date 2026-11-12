@@ -8,26 +8,26 @@ Bản web từ Motion Workbench, phục vụ tại `/video-shotcraft/` trên Git
 cd workbench
 npm ci
 npm run build:demo
-npm run test:browser-join
+npm run test:browser-export
 ```
 
 `build:demo` tạo `workbench/dist/` với base path `/video-shotcraft/`. API render Remotion của chế độ dev không được đưa vào bản tĩnh.
 
-## GHÉP VIDEO VÀ XUẤT MP4
+## DỰNG TIMELINE VÀ XUẤT MP4
 
-Trong tab **Media**, nhập video trên thiết bị, rồi đưa các clip lần lượt lên timeline. Bấm **Join · MP4**, kiểm tra danh sách clip, rồi **Create MP4** để tải kết quả về.
+Trong tab **Media**, nhập video hoặc audio trên thiết bị; tệp được lưu vào IndexedDB của trình duyệt. Kéo clip lên timeline hoặc dùng nút thêm tại playhead. Dùng các lớp video, audio, chữ/tiêu đề, phụ đề, ảnh trong project và các layer khác; chỉnh vị trí, thời lượng, trim, tốc độ, âm lượng, opacity, scale và offset trên Inspector/timeline. Bấm **Export · MP4** để xem phần tóm tắt, rồi **Create MP4**.
 
-Công cụ ghép các clip video đang hiển thị theo vị trí timeline, áp dụng trim đầu và thời lượng, fit contain/cover, opacity, scale, vị trí và mức âm thanh gốc. Khoảng trống được loại bỏ. Clip chồng nhau hoặc tốc độ khác 1× sẽ được báo lỗi thay vì xuất sai.
+Renderer giữ vị trí thời gian tuyệt đối (khoảng trống và clip chồng nhau), thứ tự layer, trim, tốc độ và audio timeline. MP4 gồm H.264 video và AAC stereo audio; âm thanh gốc của clip video và audio track riêng được trộn theo thời điểm/âm lượng. Nền và các card browser-render hỗ trợ gồm `video-clip`, `image-clip`, `audio-clip`, `text-basic`, `inkpress-title-card`, `inkpress-caption`, `inkpress-flash-cut`, `bg-paper`, `bg-paper-glow`, `bg-white` và `bg-ink`.
 
-Đây là phần **ghép video**, không phải bộ render toàn bộ composition: tiêu đề, ảnh, hiệu ứng, animation và các track âm thanh riêng không được đưa vào MP4. Hộp thoại có cảnh báo khi các lớp khác tồn tại.
+Thư viện Motion còn nhiều animation/demo React phức tạp chưa có renderer Canvas tương ứng. Nếu có layer như vậy đang hiển thị, preflight sẽ nêu card ID và khóa export cho đến khi ẩn/xóa layer; app không âm thầm xuất thiếu. Ảnh local chưa có bước import riêng (image card hiện dùng asset của project/public); không hỗ trợ chroma key, keyframe đầy đủ, effect chain tổng quát hay codec tùy chọn. Demo mặc định đã đổi sang các card browser-export hỗ trợ; nút **Reset demo** thay thế project hiện tại.
 
-MP4 dùng H.264 và AAC. Video encoding cần trình duyệt hỗ trợ WebCodecs H.264; nếu trình duyệt thiếu AAC encoder, app tự nạp AAC encoder dự phòng chạy trên thiết bị. Nên dùng bản Chrome, Edge hoặc Safari mới. Nếu âm thanh một clip không giải mã được, app báo rõ sau khi xuất.
+Quá trình encoding dùng `VideoEncoder` WebCodecs cho H.264; AAC dùng encoder trình duyệt hoặc fallback WebAssembly trên chính thiết bị. E2E đã kiểm thử bằng Chromium desktop 156 với H.264/AAC và WAV input. Yêu cầu trình duyệt có profile H.264 WebCodecs tương thích và Web Audio; các phiên bản Safari, Edge, Firefox và thiết bị di động chưa được kiểm thử trong E2E. Nếu thiết bị không hỗ trợ cấu hình đó, app báo lỗi thay vì tạo MP4 giả.
 
 ## LƯU TRỮ VÀ GIỚI HẠN
 
-Video local lưu trong IndexedDB của trình duyệt hiện tại và không tải lên máy chủ. Xóa dữ liệu website sẽ xóa các video đó. Dự án tự lưu trong localStorage và hỗ trợ nhập/xuất JSON; JSON chỉ chứa tham chiếu media, không chứa file video nên không tự chuyển được video sang thiết bị khác.
+Video và audio local lưu trong IndexedDB của trình duyệt hiện tại; không tải lên server. Xóa dữ liệu website sẽ xóa media. Dự án tự lưu trong localStorage và hỗ trợ nhập/xuất JSON; JSON chỉ chứa tham chiếu media, không gói file. Vì output được tạo trong RAM và Canvas, clip dài, 4K hoặc nhiều layer có thể chậm hay hết bộ nhớ; giữ tab mở và dùng footage ngắn/độ phân giải thấp hơn khi cần.
 
-Quá trình xuất dùng CPU/GPU và RAM của thiết bị. Video dài hoặc độ phân giải cao có thể chậm hoặc hết bộ nhớ, đặc biệt trên điện thoại. Giữ tab mở trong lúc xuất.
+Tệp media được xử lý cục bộ trong tab; xuất MP4 không gọi backend, VPS hoặc dịch vụ render trả phí. Browser export không ghi project edits ngược vào source media.
 
 ## TRIỂN KHAI GITHUB PAGES
 

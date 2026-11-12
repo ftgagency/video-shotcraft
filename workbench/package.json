@@ -19,7 +19,8 @@
     "studio": "remotion studio src/remotion/index.ts",
     "open": "node scripts/open.mjs",
     "parity": "node scripts/parity.mjs",
-    "test:browser-join": "node --test scripts/test-browser-join.mjs"
+    "test:browser-join": "node --test scripts/test-browser-render.mjs",
+    "test:browser-export": "node --test scripts/test-browser-render.mjs"
   },
   "dependencies": {
     "@mediabunny/aac-encoder": "1.65.2",

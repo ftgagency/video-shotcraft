@@ -2,7 +2,7 @@ import type { ProjectData } from "./types";
 import { uid } from "./types";
 import { t } from "./i18n";
 
-/** 初始演示工程（未接入成片时）：纸底 + 两张 demo 镜头卡顺排 + 字卡 + 解说条。
+/** 初始演示工程（未接入成片时）：纸底 + 原生动效字卡 + 解说条 + 闪白转场。
  *  同时是 Remotion Studio「Main」合成的 defaultProps 来源——保持纯函数，别引 store。 */
 export const demoProject = (): ProjectData => {
   const clip = (cardId: string, start: number, duration: number, props: Record<string, unknown> = {}, label?: string) => ({
@@ -25,15 +25,23 @@ export const demoProject = (): ProjectData => {
         name: t("track.shots"),
         clips: [
           clip("inkpress-title-card", 0, 55, { text: "Every shot, *tuned* in one place." }),
-          clip("demo:HitCounter", 55, 176),
-          clip("demo:CrashImpactReal", 231, 126),
-          clip("inkpress-title-card", 357, 55, { text: "Drag a card. *Tweak* it. Export." }),
+          clip("text-basic", 55, 176, {
+            content: "VIDEO · TITLES · AUDIO\nEDITED ON YOUR DEVICE",
+            fontSize: 76,
+            color: "#ffffff",
+            bg: "#1b3fd6",
+            transparentBg: false,
+            align: "center",
+            anim: "slam",
+          }, "Browser-rendered title"),
+          clip("inkpress-flash-cut", 225, 10),
+          clip("inkpress-title-card", 235, 55, { text: "Drag a card. *Tweak* it. Export." }),
         ],
       },
       {
         id: uid("track"),
         name: t("track.background"),
-        clips: [clip("bg-paper", 0, 412)],
+        clips: [clip("bg-paper", 0, 290)],
       },
     ],
   };
